@@ -19,12 +19,10 @@ json body
 	}, {
 		"speaker": "Fred Zhang",
 		"command": "cNn"
-	},
-	{
+	},{
 		"speaker": "Fred Zhang",
 		"command": "cnn"
-	},
-	{
+	},{
 		"speaker": "Fred Zhang",
 		"command": "CNN"
 	}],
