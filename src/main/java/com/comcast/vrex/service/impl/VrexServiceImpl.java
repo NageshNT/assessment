@@ -10,6 +10,15 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 import java.util.*;
 import java.util.Map.Entry;
 
+/**
+ * Service Implementation class for handling processCommandsByState and topCommandsNationally requests
+ * @see @Vrex
+ *
+ * @author Nagesh Chandra N.T.
+ * @version 1.0
+ *
+ */
+
 @Service
 @Slf4j
 public class VrexServiceImpl implements VrexService {
@@ -18,10 +27,15 @@ public class VrexServiceImpl implements VrexService {
 	@Override
 	public VrexResponsePayload processCommandsByState(List<VrexCommand> commands) {
 		VrexResponsePayload responsePayload=new VrexResponsePayload();
-		responsePayload.setStartProcessTime(System.currentTimeMillis());
-		responsePayload.setMostFrequentCommand(calculateMostFrequentCommand(commands));
-		responsePayload.setStopProcessTime(System.currentTimeMillis());
-
+		responsePayload.setStartProcessTime(System.nanoTime());
+		try{
+			responsePayload.setMostFrequentCommand(calculateMostFrequentCommand(commands));
+		}
+		catch(Exception e){
+			log.error("Error occured while processing commands by state: {}",e);
+			throw e;
+		}
+		responsePayload.setStopProcessTime(System.nanoTime());
 		return responsePayload;
 	}
 
@@ -30,10 +44,16 @@ public class VrexServiceImpl implements VrexService {
 		for(VrexCommand command: commands) {
 			commandValues.add(command.getCommand());
 		}
-	return findMostRepeated(commandValues);
+		return findMostRepeated(commandValues);
 		
 	}
 
+	/**
+	 * Processes given list of commands for  returns the most frequently occurring
+	 *
+	 * @param  commandValues  List of all the VrexCommands that hold the information of the command and the speaker
+	 * @return  String  response payload with the most frequently used command
+	 */
 	private String findMostRepeated(List<String> commandValues){
 		Map<String, Integer> map = new LinkedCaseInsensitiveMap<>();
 
@@ -57,7 +77,14 @@ public class VrexServiceImpl implements VrexService {
 		return findTopK(commands,3);
 	}
 
-	public List<String> findTopK(List<String> input, int k) {
+	/**
+	 * Processes given list of commands for  returns the top 3 most frequently occurring
+	 *
+	 * @param  input  List of all the VrexCommands that hold the information of the command and the speaker
+	 * @param  k  integer representing the value of top howmany
+	 * @return  String  response payload with the most frequently used command
+	 */
+	private List<String> findTopK(List<String> input, int k) {
 		List<String> results=new ArrayList<>();
 		for(int i=0;i<k;i++){
 			String val = findMostRepeated(input);
