@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Controller that exposes end point /commands to process a Vrex application
@@ -30,33 +32,39 @@ public class VrexController {
 	private final VrexService vrexService;
 
 	@PostMapping(value = "/commands", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity  handleVrexRequest(@RequestBody Map<String, List<VrexCommand>>  vrexRequest) {
-		List<String> allCommands = new ArrayList<>();
-		Map<String, Object> vrexResponse = new HashMap<>();
-
-		if (null != vrexRequest ) {
-		    log.info("Executing top commands by state.");
-		    try {
-				Iterator it = vrexRequest.entrySet().iterator();
-				while (it.hasNext()) {
-					Map.Entry pair = (Map.Entry) it.next();
-					VrexResponsePayload stateResponse = vrexService.processCommandsByState((List<VrexCommand>) pair.getValue());
-					vrexResponse.put((String) pair.getKey(), stateResponse);
-					log.info("Total time taken for processing state: {} is :{} nanos", pair.getKey(), stateResponse.getStopProcessTime() - stateResponse.getStartProcessTime());
-					for (VrexCommand command : (List<VrexCommand>) pair.getValue()) {
-						allCommands.add(command.getCommand());
-					}
-					it.remove();
-				}
-				vrexResponse.put("topCommandsNationally”",vrexService.topCommandsNationally(allCommands));
-			}
-		    catch(Exception e){
-		    	log.error("Exeption occured while processing request {}",e);
-		    	throw e;
-			}
-			log.info("Processing completed for Vrex request.");
+	public ResponseEntity  handleVrexRequest(@RequestBody Optional<Map<String, List<VrexCommand>>>  vrexRequest) {
+		List<String> allCommands = Collections.synchronizedList(new ArrayList());
+		Map<String, Object> vrexResponse = new ConcurrentHashMap<>();
+		if (!vrexRequest.isPresent() ) {
+			return new ResponseEntity<>(vrexResponse, HttpStatus.BAD_REQUEST);
 
 		}
+		log.info("Executing top commands by state.");
+		try {
+			synchronized (this) {
+				Map<String, VrexResponsePayload> stateResponse = vrexRequest.get()
+						.entrySet().parallelStream()
+						.collect(Collectors.toMap(e -> e.getKey(),
+								e -> vrexService.processCommandsByState((List<VrexCommand>) e.getValue()))
+						);
+				vrexResponse.putAll(stateResponse);
+
+				log.info("Processing completed for top commands by state.");
+
+				 vrexRequest.get()
+						.entrySet().parallelStream()
+						 .forEach( e -> e.getValue().stream().forEach(x -> allCommands.add(x.getCommand())) );
+
+
+				vrexResponse.put("topCommandsNationally”", vrexService.topCommandsNationally(allCommands));
+			}
+		}
+		catch(Exception e){
+			log.error("Exeption occured while processing request {}",e);
+			throw e;
+		}
+		log.info("Processing completed for Vrex request.");
+
 		return new ResponseEntity<>(vrexResponse, HttpStatus.OK);
 
 	}

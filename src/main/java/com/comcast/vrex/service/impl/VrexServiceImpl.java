@@ -27,7 +27,7 @@ public class VrexServiceImpl implements VrexService {
 	@Override
 	public VrexResponsePayload processCommandsByState(List<VrexCommand> commands) {
 		VrexResponsePayload responsePayload=new VrexResponsePayload();
-		responsePayload.setStartProcessTime(System.nanoTime());
+		responsePayload.setStartProcessTime(System.currentTimeMillis());
 		try{
 			responsePayload.setMostFrequentCommand(calculateMostFrequentCommand(commands));
 		}
@@ -35,7 +35,7 @@ public class VrexServiceImpl implements VrexService {
 			log.error("Error occured while processing commands by state: {}",e);
 			throw e;
 		}
-		responsePayload.setStopProcessTime(System.nanoTime());
+		responsePayload.setStopProcessTime(System.currentTimeMillis());
 		return responsePayload;
 	}
 
