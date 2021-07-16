@@ -9,6 +9,7 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Service Implementation class for handling processCommandsByState and topCommandsNationally requests
@@ -40,10 +41,9 @@ public class VrexServiceImpl implements VrexService {
 	}
 
 	private String calculateMostFrequentCommand(List<VrexCommand> commands) {
-		List<String> commandValues=new ArrayList<>();
-		for(VrexCommand command: commands) {
-			commandValues.add(command.getCommand());
-		}
+		List<String> commandValues=commands.stream()
+				.filter(e -> e.getCommand() != null)
+				.map(e -> e.getCommand()).collect(Collectors.toList());
 		return findMostRepeated(commandValues);
 		
 	}
@@ -58,8 +58,10 @@ public class VrexServiceImpl implements VrexService {
 		Map<String, Integer> map = new LinkedCaseInsensitiveMap<>();
 
 		for (String command: commandValues) {
-			Integer val = map.get(command);
-			map.put(command, val == null ? 1 : val + 1);
+			if(null != command){
+				Integer val = map.get(command);
+				map.put(command, val == null ? 1 : val + 1);
+			}
 		}
 
 		Entry<String, Integer> max = null;
