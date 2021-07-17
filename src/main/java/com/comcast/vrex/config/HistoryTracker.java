@@ -14,16 +14,8 @@ public class HistoryTracker {
 		return topNationCommandsMap;
 	}
 
-	public static void setTopNationCommandsMap(Set<TopCommandFrequencyTracker> topNationCommandsMap) {
-		HistoryTracker.topNationCommandsMap = topNationCommandsMap;
-	}
-
 	public static Map<String, TopCommandFrequencyTracker> getTopStateCommandsMap() {
 		return topStateCommandsMap;
-	}
-
-	public static void setTopStateCommandsMap(Map<String, TopCommandFrequencyTracker> topStateCommandsMap) {
-		HistoryTracker.topStateCommandsMap = topStateCommandsMap;
 	}
 
 	public static Set<TopCommandFrequencyTracker> topNationCommandsMap = new HashSet<>();
