@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -42,12 +43,11 @@ public class VrexController {
 		try {
 			synchronized (this) {
 				Map<String, VrexResponsePayload> stateResponse = vrexRequest.get()
-						.entrySet().parallelStream()
+						.entrySet().stream()
 						.filter(e -> e != null )
 						.filter(e -> Objects.nonNull(e.getValue()))
 						.filter(e -> e.getValue().size() != 0)
-						.collect(Collectors.toMap(e -> e.getKey(),
-								e -> vrexService.processCommandsByState((List<VrexCommand>) e.getValue()))
+						.collect(Collectors.toMap(e -> e.getKey(),e -> vrexService.processCommandsByState(e.getKey(),(List<VrexCommand>) e.getValue()))
 						);
 				vrexResponse.putAll(stateResponse);
 

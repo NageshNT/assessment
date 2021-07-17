@@ -21,7 +21,7 @@ public interface VrexService {
 	 * @param  commands  List of all the VrexCommands for a particular state that hold the information of the command and the speaker
 	 * @return  VrexResponsePayload  response payload with the most frequently used command and start and stop processing times for a given state
 	 */
-	VrexResponsePayload processCommandsByState(List<VrexCommand> commands);
+	VrexResponsePayload processCommandsByState(String state,List<VrexCommand> commands);
 
 
 	/**
